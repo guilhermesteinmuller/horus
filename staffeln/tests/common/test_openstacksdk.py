@@ -54,9 +54,7 @@ class OpenstackSDKTest(base.TestCase):
             **kwargs,
         )
         self.assertEqual(status_code, exc.status_code)
-        skip_retry_codes = conf.CONF.openstack.skip_retry_codes.replace(" ", "").split(
-            ","
-        )
+        skip_retry_codes = conf.CONF.openstack.skip_retry_codes
         if str(status_code) not in skip_retry_codes:
             if call_count == 1:
                 self.m_sleep.assert_called_once_with(1.0)
@@ -83,17 +81,18 @@ class OpenstackSDKTest(base.TestCase):
         self._test_non_http_error(self.m_c.compute.servers, "get_servers")
 
     def test_get_servers_conf_skip_http_error(self):
-        conf.CONF.set_override("skip_retry_codes", "403,", "openstack")
+        conf.CONF.set_override("skip_retry_codes", [403], "openstack")
         self._test_http_error(self.m_c.compute.servers, "get_servers", status_code=403)
-        self.assertEqual("403,", conf.CONF.openstack.skip_retry_codes)
+        self.assertEqual(["403"], conf.CONF.openstack.skip_retry_codes)
 
     def test_get_servers_conf_skip_http_error_not_hit(self):
-        conf.CONF.set_override("skip_retry_codes", "403,", "openstack")
+        conf.CONF.set_override("skip_retry_codes", [403], "openstack")
         self._test_http_error(self.m_c.compute.servers, "get_servers", status_code=404)
-        self.assertEqual("403,", conf.CONF.openstack.skip_retry_codes)
+        self.assertEqual(["403"], conf.CONF.openstack.skip_retry_codes)
 
     def test_get_servers_404_http_error(self):
         self._test_http_error(self.m_c.compute.servers, "get_servers", status_code=404)
+        self.assertEqual(["404"], conf.CONF.openstack.skip_retry_codes)
 
     def test_get_servers_500_http_error(self):
         self._test_http_error(self.m_c.compute.servers, "get_servers", status_code=500)

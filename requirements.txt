@@ -20,3 +20,4 @@ parse
 tooz # Apache-2.0
 sherlock>=0.4.1 # MIT
 kubernetes # Apache-2.0
+tenacity
